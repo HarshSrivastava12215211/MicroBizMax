@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard – MicroBizMax</title>
+    <meta name="description" content="MicroBizMax Admin Dashboard – manage all vendors, customers, products, orders, and discounts">
+    <link rel="stylesheet" href="/css/app.css">
+    <style>
+        /* ── Admin-specific overrides ── */
+        .admin-top-badge {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: rgba(59,130,246,0.08); border: 1.5px solid var(--blue-200);
+            border-radius: 50px; padding: 5px 16px; font-size: .78rem;
+            color: var(--blue-700); font-weight: 700; letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+        .admin-top-badge .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--blue-500); animation: pulse 2s ease-in-out infinite; }
+        @keyframes pulse { 0%,100%{box-shadow:0 0 0 0 rgba(59,130,246,0.3)} 50%{box-shadow:0 0 0 6px rgba(59,130,246,0)} }
+
+        /* Tab system */
+        .tab-bar {
+            display: flex; gap: 6px; margin-bottom: 28px;
+            background: rgba(255,255,255,0.6); border: 1.5px solid var(--blue-100);
+            border-radius: 18px; padding: 6px;
+            overflow-x: auto; flex-wrap: nowrap;
+        }
+        .tab-btn {
+            padding: 10px 22px; border: none; background: transparent;
+            color: var(--gray-400); font-family: var(--font-body);
+            font-size: .85rem; font-weight: 600; border-radius: 12px;
+            cursor: pointer; transition: all .3s; white-space: nowrap; flex-shrink: 0;
+        }
+        .tab-btn:hover { color: var(--blue-700); background: rgba(59,130,246,0.05); }
+        .tab-btn.active {
+            background: linear-gradient(135deg, var(--blue-500), var(--blue-700));
+            color: #fff; box-shadow: 0 4px 14px rgba(59,130,246,0.25);
+        }
+        .tab-pane { display: none; }
+        .tab-pane.active { display: block; animation: fadeInUp 0.4s ease; }
+
+        /* Search bar */
+        .search-bar {
+            display: flex; align-items: center; gap: 12px; margin-bottom: 20px;
+        }
+        .search-input {
+            flex: 1; padding: 11px 18px 11px 42px;
+            background: rgba(255,255,255,0.7); border: 1.5px solid var(--blue-100);
+            border-radius: 12px; color: var(--gray-800);
+            font-family: var(--font-body); font-size: .88rem; outline: none; transition: all .3s;
+        }
+        .search-input:focus { border-color: var(--blue-400); box-shadow: 0 0 0 3px rgba(59,130,246,0.08); background: #fff; }
+        .search-input::placeholder { color: var(--gray-400); }
+        .search-wrap { position: relative; flex: 1; }
+        .search-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); font-size: .9rem; pointer-events: none; }
+
+        /* Revenue chip */
+        .revenue-chip {
+            display: inline-block; padding: 3px 12px;
+            background: rgba(59,130,246,0.08); border-radius: 20px;
+            color: var(--blue-700); font-weight: 700; font-size: .85rem;
+        }
+    </style>
+</head>
+<body>
+<div class="page-bg"></div>
+<div class="app-layout">
+
+    <!-- Sidebar -->
+    <nav class="sidebar">
+        <div class="sidebar-brand">MicroBizMax</div>
+        <ul class="sidebar-nav">
+            <li><a href="#" class="active" onclick="switchTab('overview',this)"><span class="nav-icon"></span><span>Overview</span></a></li>
+            <li><a href="#" onclick="switchTab('vendors',this)"><span class="nav-icon"></span><span>Vendors</span></a></li>
+            <li><a href="#" onclick="switchTab('customers',this)"><span class="nav-icon"></span><span>Customers</span></a></li>
+            <li><a href="#" onclick="switchTab('products',this)"><span class="nav-icon"></span><span>Products</span></a></li>
+            <li><a href="#" onclick="switchTab('orders',this)"><span class="nav-icon"></span><span>Orders</span></a></li>
+            <li><a href="#" onclick="switchTab('discounts',this)"><span class="nav-icon"></span><span>Discounts</span></a></li>
+        </ul>
+        <div class="sidebar-footer">
+            <a href="#" id="logoutBtn"><span class="nav-icon"></span><span>Logout</span></a>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="top-bar">
+            <div>
+                <h1>Admin Dashboard</h1>
+                <p style="color:var(--gray-500);margin-top:4px;">
+                    <span class="admin-top-badge"><span class="dot"></span>Admin</span>
+                    &nbsp;Full system visibility
+                </p>
+            </div>
+            <div class="top-bar-right">
+                <span id="adminNameBadge" style="color:var(--blue-600);font-weight:600;font-size:.9rem;"></span>
+            </div>
+        </div>
+
+        <!-- Stats Row -->
+        <div class="stats-grid" id="statsRow">
+            <div class="stat-card"><span class="stat-icon"></span><div class="stat-label">Total Vendors</div><div class="stat-value" id="sVendors">—</div></div>
+            <div class="stat-card"><span class="stat-icon"></span><div class="stat-label">Total Customers</div><div class="stat-value" id="sCustomers">—</div></div>
+            <div class="stat-card"><span class="stat-icon"></span><div class="stat-label">Total Products</div><div class="stat-value" id="sProducts">—</div></div>
+            <div class="stat-card"><span class="stat-icon"></span><div class="stat-label">Total Orders</div><div class="stat-value" id="sOrders">—</div></div>
+            <div class="stat-card"><span class="stat-icon"></span><div class="stat-label">Total Revenue</div><div class="stat-value" id="sRevenue">—</div></div>
+        </div>
+
+        <!-- Overview pane -->
+        <div class="tab-pane active" id="pane-overview">
+            <div class="glass-card">
+                <h3 style="color:var(--gray-800);margin-bottom:16px;font-weight:700;"> Welcome, Admin</h3>
+                <p style="color:var(--gray-500);line-height:1.7;">
+                    You have full visibility across all vendor accounts. Use the sidebar tabs above to drill into
+                    Vendors, Customers, Products, Orders, and Discounts. Stats refresh automatically.
+                </p>
+            </div>
+        </div>
+
+        <!-- Vendors pane -->
+        <div class="tab-pane" id="pane-vendors">
+            <div class="search-bar">
+                <div class="search-wrap">
+                    <span class="search-icon"></span>
+                    <input class="search-input" id="searchVendors" placeholder="Search vendors by name or email…">
+                </div>
+            </div>
+            <div class="data-table-wrap">
+                <table class="data-table">
+                    <thead><tr><th>#</th><th>Name</th><th>Shop</th><th>Email</th><th>Phone</th><th>Address</th></tr></thead>
+                    <tbody id="tbVendors"><tr><td colspan="6" style="text-align:center;color:var(--gray-400);padding:40px;">Loading…</td></tr></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Customers pane -->
+        <div class="tab-pane" id="pane-customers">
+            <div class="search-bar">
+                <div class="search-wrap">
+                    <span class="search-icon"></span>
+                    <input class="search-input" id="searchCustomers" placeholder="Search customers by name or phone…">
+                </div>
+            </div>
+            <div class="data-table-wrap">
+                <table class="data-table">
+                    <thead><tr><th>#</th><th>Name</th><th>Phone</th><th>Email</th><th>Address</th></tr></thead>
+                    <tbody id="tbCustomers"><tr><td colspan="5" style="text-align:center;color:var(--gray-400);padding:40px;">Loading…</td></tr></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Products pane -->
+        <div class="tab-pane" id="pane-products">
+            <div class="search-bar">
+                <div class="search-wrap">
+                    <span class="search-icon"></span>
+                    <input class="search-input" id="searchProducts" placeholder="Search products by name or category…">
+                </div>
+            </div>
+            <div class="data-table-wrap">
+                <table class="data-table">
+                    <thead><tr><th>#</th><th>Name</th><th>Category</th><th>Price (₹)</th><th>Cost (₹)</th><th>Stock</th><th>Vendor</th></tr></thead>
+                    <tbody id="tbProducts"><tr><td colspan="7" style="text-align:center;color:var(--gray-400);padding:40px;">Loading…</td></tr></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Orders pane -->
+        <div class="tab-pane" id="pane-orders">
+            <div class="search-bar">
+                <div class="search-wrap">
+                    <span class="search-icon"></span>
+                    <input class="search-input" id="searchOrders" placeholder="Search orders by status or payment method…">
+                </div>
+            </div>
+            <div class="data-table-wrap">
+                <table class="data-table">
+                    <thead><tr><th>#</th><th>Date</th><th>Vendor</th><th>Customer</th><th>Total (₹)</th><th>Payment</th><th>Status</th></tr></thead>
+                    <tbody id="tbOrders"><tr><td colspan="7" style="text-align:center;color:var(--gray-400);padding:40px;">Loading…</td></tr></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Discounts pane -->
+        <div class="tab-pane" id="pane-discounts">
+            <div class="search-bar">
+                <div class="search-wrap">
+                    <span class="search-icon"></span>
+                    <input class="search-input" id="searchDiscounts" placeholder="Search discount codes…">
+                </div>
+            </div>
+            <div class="data-table-wrap">
+                <table class="data-table">
+                    <thead><tr><th>#</th><th>Code</th><th>Type</th><th>Value</th><th>Min Order (₹)</th><th>Expiry</th></tr></thead>
+                    <tbody id="tbDiscounts"><tr><td colspan="6" style="text-align:center;color:var(--gray-400);padding:40px;">Loading…</td></tr></tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+</div>
+
+<div class="toast" id="toast"></div>
+<script src="/js/admin-dashboard.js"></script>
+<script src="/js/chatbot.js"></script>
+</body>
+</html>

@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile – MicroBizMax</title>
+    <meta name="description" content="Manage your vendor profile">
+    <link rel="stylesheet" href="/css/app.css">
+</head>
+<body>
+<div class="page-bg"></div>
+<div class="app-layout">
+
+    <nav class="sidebar">
+        <div class="sidebar-brand">MicroBizMax</div>
+        <ul class="sidebar-nav">
+            <li><a href="/dashboard.html"><span class="nav-icon"></span><span>Dashboard</span></a></li>
+            <li><a href="/products.html"><span class="nav-icon"></span><span>Products</span></a></li>
+            <li><a href="/sales.html"><span class="nav-icon"></span><span>Sales</span></a></li>
+            <li><a href="/customers.html"><span class="nav-icon"></span><span>Customers</span></a></li>
+            <li><a href="/discounts.html"><span class="nav-icon"></span><span>Discounts</span></a></li>
+            <li><a href="/profile.html" class="active"><span class="nav-icon"></span><span>Profile</span></a></li>
+        </ul>
+        <div class="sidebar-footer">
+            <a href="#" id="logoutBtn"><span class="nav-icon"></span><span>Logout</span></a>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <div class="top-bar">
+            <h1> My Profile</h1>
+            <div class="top-bar-right">
+                <select class="lang-selector" id="langSelector">
+                    <option value="en">English</option><option value="hi">हिन्दी</option><option value="pa">ਪੰਜਾਬੀ</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Profile Header -->
+        <div class="profile-header">
+            <div class="profile-avatar" id="profileAvatar">V</div>
+            <div class="profile-info">
+                <h2 id="profileName">Vendor Name</h2>
+                <p id="profileShopName">Shop Name</p>
+                <p id="profileEmail" style="color:rgba(255,255,255,0.4);font-size:.85rem;margin-top:4px;">email@example.com</p>
+            </div>
+        </div>
+
+        <!-- Profile Details -->
+        <div class="profile-details-grid">
+            <div class="glass-card">
+                <h3 style="font-size:1.1rem;margin-bottom:20px;color:rgba(255,255,255,0.85);">📋 Shop Details</h3>
+                <form id="profileForm">
+                    <div class="form-group">
+                        <label>Full Name</label>
+                        <input class="form-control" id="prName" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Shop Name</label>
+                        <input class="form-control" id="prShopName" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Phone</label>
+                        <input class="form-control" id="prPhone">
+                    </div>
+                    <div class="form-group">
+                        <label>Address</label>
+                        <input class="form-control" id="prAddress">
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;">Update Profile</button>
+                </form>
+            </div>
+
+            <div class="glass-card">
+                <h3 style="font-size:1.1rem;margin-bottom:20px;color:rgba(255,255,255,0.85);">🔒 Change Password</h3>
+                <form id="passwordForm">
+                    <div class="form-group">
+                        <label>Current Password</label>
+                        <input class="form-control" type="password" id="oldPassword" required>
+                    </div>
+                    <div class="form-group">
+                        <label>New Password</label>
+                        <input class="form-control" type="password" id="newPassword" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Confirm New Password</label>
+                        <input class="form-control" type="password" id="confirmPassword" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;">Change Password</button>
+                </form>
+
+                <div style="margin-top:32px;padding-top:24px;border-top:1px solid rgba(255,255,255,0.06);">
+                    <h3 style="font-size:1.1rem;margin-bottom:12px;color:rgba(255,255,255,0.85);">📊 My Stats</h3>
+                    <div style="display:flex;flex-direction:column;gap:12px;">
+                        <div class="flex-between">
+                            <span style="color:rgba(255,255,255,0.5)">Total Sales</span>
+                            <span style="font-weight:600;" id="prTotalSales">₹0</span>
+                        </div>
+                        <div class="flex-between">
+                            <span style="color:rgba(255,255,255,0.5)">Total Profit</span>
+                            <span style="font-weight:600;" id="prTotalProfit">₹0</span>
+                        </div>
+                        <div class="flex-between">
+                            <span style="color:rgba(255,255,255,0.5)">Products</span>
+                            <span style="font-weight:600;" id="prProducts">0</span>
+                        </div>
+                        <div class="flex-between">
+                            <span style="color:rgba(255,255,255,0.5)">Customers</span>
+                            <span style="font-weight:600;" id="prCustomers">0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<div class="toast" id="toast"></div>
+<script src="/js/translations.js"></script>
+<script src="/js/profile.js"></script>
+<script src="/js/chatbot.js"></script>
+</body>
+</html>

@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard – MicroBizMax</title>
+    <meta name="description" content="MicroBizMax vendor management dashboard – track sales, profits, and inventory">
+    <link rel="stylesheet" href="/css/app.css">
+</head>
+<body>
+<div class="page-bg"></div>
+<div class="app-layout">
+
+    <!-- Sidebar -->
+    <nav class="sidebar">
+        <div class="sidebar-brand" data-i18n="brand">MicroBizMax</div>
+        <ul class="sidebar-nav">
+            <li><a href="/dashboard.html" class="active"><span class="nav-icon"></span><span data-i18n="nav_dashboard">Dashboard</span></a></li>
+            <li><a href="/products.html"><span class="nav-icon"></span><span data-i18n="nav_products">Products</span></a></li>
+            <li><a href="/sales.html"><span class="nav-icon"></span><span data-i18n="nav_sales">Sales</span></a></li>
+            <li><a href="/customers.html"><span class="nav-icon"></span><span data-i18n="nav_customers">Customers</span></a></li>
+            <li><a href="/discounts.html"><span class="nav-icon"></span><span data-i18n="nav_discounts">Discounts</span></a></li>
+            <li><a href="/profile.html"><span class="nav-icon"></span><span data-i18n="nav_profile">Profile</span></a></li>
+        </ul>
+        <div class="sidebar-footer">
+            <a href="#" id="logoutBtn"><span class="nav-icon"></span><span data-i18n="nav_logout">Logout</span></a>
+        </div>
+    </nav>
+
+    <!-- Main -->
+    <main class="main-content">
+        <div class="top-bar">
+            <div>
+                <h1 data-i18n="welcome">Welcome Back </h1>
+                <p style="color:#64748b;" data-i18n="manage_shop">Manage your shop and track sales</p>
+            </div>
+            <div class="top-bar-right">
+                <select class="lang-selector" id="langSelector">
+                    <option value="en">English</option>
+                    <option value="hi">हिन्दी</option>
+                    <option value="pa">ਪੰਜਾਬੀ</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <span class="stat-icon"></span>
+                <div class="stat-label" data-i18n="tot_sales">Total Sales</div>
+                <div class="stat-value" id="statTotalSales">₹0</div>
+            </div>
+            <div class="stat-card">
+                <span class="stat-icon"></span>
+                <div class="stat-label" data-i18n="total_profit">Total Profit</div>
+                <div class="stat-value" id="statTotalProfit">₹0</div>
+            </div>
+            <div class="stat-card">
+                <span class="stat-icon"></span>
+                <div class="stat-label" data-i18n="products">Products</div>
+                <div class="stat-value" id="statProducts">0</div>
+            </div>
+            <div class="stat-card">
+                <span class="stat-icon"></span>
+                <div class="stat-label" data-i18n="orders_today">Orders Today</div>
+                <div class="stat-value" id="statOrdersToday">0</div>
+            </div>
+            <div class="stat-card">
+                <span class="stat-icon"></span>
+                <div class="stat-label" data-i18n="total_customers">Total Customers</div>
+                <div class="stat-value" id="statCustomers">0</div>
+            </div>
+            <div class="stat-card">
+                <span class="stat-icon"></span>
+                <div class="stat-label" data-i18n="repeated_customers">Repeat Customers</div>
+                <div class="stat-value" id="statRepeated">0</div>
+            </div>
+        </div>
+
+        <!-- Charts -->
+        <div class="charts-grid">
+            <div class="chart-container">
+                <h3 data-i18n="monthly_sales">Monthly Sales & Profit</h3>
+                <canvas id="monthlySalesChart"></canvas>
+            </div>
+            <div class="chart-container">
+                <h3 data-i18n="quick_actions">Quick Actions</h3>
+                <div style="display:flex;flex-direction:column;gap:12px;margin-top:12px;">
+                    <a href="/products.html" class="btn btn-primary" style="justify-content:center;"> Add Product</a>
+                    <a href="/sales.html" class="btn btn-success" style="justify-content:center;"> New Sale</a>
+                    <a href="/customers.html" class="btn btn-outline" style="justify-content:center;"> Add Customer</a>
+                    <a href="/discounts.html" class="btn btn-outline" style="justify-content:center;"> Create Discount</a>
+                </div>
+                <div style="margin-top: 24px;">
+                    <div class="stat-label" data-i18n="low_stock_alert">Low Stock Alert</div>
+                    <div class="stat-value" id="statLowStock" style="font-size:1.4rem;color:#f97316;">0 items</div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+</div>
+
+<div class="toast" id="toast"></div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="/js/translations.js"></script>
+<script src="/js/dashboard.js"></script>
+<script src="/js/chatbot.js"></script>
+</body>
+</html>
