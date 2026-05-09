@@ -9,10 +9,10 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.vendor</groupId>
-	<artifactId>vendorops</artifactId>
+	<artifactId>microbizmax</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>vendorops</name>
-	<description>Demo project for Spring Boot</description>
+	<name>MicroBizMax</name>
+	<description>Premium Vendor Management Platform</description>
 	<url/>
 	<licenses>
 		<license/>
