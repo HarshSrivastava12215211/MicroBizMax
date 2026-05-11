@@ -1,5 +1,10 @@
 # 🚀 MicroBizMax (formerly VendorOps)
 
+![Java](https://img.shields.io/badge/Java-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white)
+![Spring Boot](https://img.shields.io/badge/Spring_Boot-6DB33F?style=for-the-badge&logo=spring-boot&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white)
+![Render](https://img.shields.io/badge/Render-46E3B7?style=for-the-badge&logo=render&logoColor=white)
+
 **MicroBizMax** is a premium, full-stack vendor management platform designed with a modern **Light Blue & White Glassmorphism** aesthetic. It empowers small to medium-sized business owners (vendors) to digitize their inventory, track sales, manage customers, and apply smart discounts—all through a sleek, professional interface.
 
 ![MicroBizMax Preview](https://via.placeholder.com/1200x600/eff6ff/3b82f6?text=MicroBizMax+Smart+Vendor+Platform)
@@ -32,11 +37,11 @@
 
 ## 🛠️ Technology Stack
 
-- **Backend:** Java 17, Spring Boot, Spring Data JPA
-- **Database:** PostgreSQL
-- **Frontend:** Vanilla HTML5, CSS3 (Glassmorphism System), JavaScript (ES6+)
-- **Visuals:** Chart.js (Data Visualization), Font Awesome 6 (Icons), Google Fonts (Inter)
-- **Deployment:** Dockerized for Render/Koyeb
+- **Backend (Server-Side):** Java 17, Spring Boot (REST API), Spring Data JPA, Spring Security
+- **Database (Persistence):** PostgreSQL (Hosted on NeonDB)
+- **Frontend (Client-Side):** HTML5, CSS3 (Custom Glassmorphism Design System), Vanilla JavaScript (ES6+)
+- **Visuals & Utils:** Chart.js, Font Awesome 6, Google Fonts (Inter), Gemini AI (Chatbot)
+- **Deployment:** Dockerized and hosted on **Render**
 
 ---
 
@@ -50,8 +55,8 @@
 ### Local Installation
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/HarshSrivastava12215211/advance-java-portfolio.git
-   cd advance-java-portfolio
+   git clone https://github.com/HarshSrivastava12215211/MicroBizMax.git
+   cd MicroBizMax
    ```
 
 2. **Configure Database:**
@@ -72,10 +77,11 @@
 
 ## ☁️ Deployment
 
-This project is cloud-ready. To deploy for free:
-1. **Database:** Create a free PostgreSQL instance on [Neon.tech](https://neon.tech/).
-2. **Web Service:** Connect this repo to [Render.com](https://render.com/).
-3. **Build:** Render will automatically detect the `Dockerfile` and deploy the full-stack application.
+This project is live and cloud-ready:
+- **Live Demo:** [https://microbizmax.onrender.com](https://microbizmax.onrender.com)
+- **Database:** Hosted on [Neon.tech](https://neon.tech/) (Free PostgreSQL).
+- **Hosting:** Deployed on [Render.com](https://render.com/).
+- **Build:** Render automatically detects the `Dockerfile` and deploys the full-stack Spring Boot application.
 
 ---
 
