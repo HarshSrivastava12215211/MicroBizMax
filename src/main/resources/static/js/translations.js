@@ -37,7 +37,7 @@ const translations = {
     "login_link":     "Login",
     "benefit_secure": "Secure & Encrypted",
     "benefit_instant":"Instant Setup",
-    "benefit_ai":     "AI-Powered",
+    "benefit_ai":     "Smart Help",
     "benefit_analytics": "Live Analytics",
 
     /* ── Sidebar / Nav ── */
@@ -103,7 +103,7 @@ const translations = {
     "login_link":     "लॉगिन करें",
     "benefit_secure": "सुरक्षित और एन्क्रिप्टेड",
     "benefit_instant":"तत्काल सेटअप",
-    "benefit_ai":     "AI-संचालित",
+    "benefit_ai":     "Smart Help",
     "benefit_analytics": "लाइव एनालिटिक्स",
 
     /* ── Sidebar / Nav ── */
@@ -169,7 +169,7 @@ const translations = {
     "login_link":     "ਲੌਗਇਨ ਕਰੋ",
     "benefit_secure": "ਸੁਰੱਖਿਅਤ ਅਤੇ ਏਨਕ੍ਰਿਪਟਡ",
     "benefit_instant":"ਤੁਰੰਤ ਸੈੱਟਅੱਪ",
-    "benefit_ai":     "AI-ਸੰਚਾਲਿਤ",
+    "benefit_ai":     "Smart Help",
     "benefit_analytics": "ਲਾਈਵ ਵਿਸ਼ਲੇਸ਼ਣ",
 
     /* ── Sidebar / Nav ── */

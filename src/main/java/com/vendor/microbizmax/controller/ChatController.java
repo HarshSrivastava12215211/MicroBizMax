@@ -4,7 +4,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
+import com.vendor.microbizmax.service.AnalyticsService;
 
+import java.time.LocalDate;
+import java.time.format.TextStyle;
 import java.util.*;
 
 @CrossOrigin(origins = "*")
@@ -15,12 +18,24 @@ public class ChatController {
     @Value("${gemini.api.key:}")
     private String geminiApiKey;
 
+    @Value("${gemini.model:gemini-2.5-flash}")
+    private String geminiModel;
+
     private static final String GEMINI_URL =
-            "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=";
+            "https://generativelanguage.googleapis.com/v1beta/models/%s:generateContent?key=%s";
+
+    private final AnalyticsService analyticsService;
+    private final RestTemplate restTemplate = new RestTemplate();
+
+    public ChatController(AnalyticsService analyticsService) {
+        this.analyticsService = analyticsService;
+    }
 
     private static final String SYSTEM_PROMPT = """
-            You are a friendly and helpful customer support assistant for MicroBizMax — a vendor management portal for small business owners.
-            Your job is to answer user questions about how to use the MicroBizMax platform. Be concise, clear, and friendly.
+            You are a friendly and helpful assistant for MicroBizMax — a vendor management portal for small business owners.
+            Answer questions about the MicroBizMax platform, small business operations, customers, products, sales, discounts,
+            inventory, analytics, and practical store-management decisions. Use the live business context when it is provided.
+            Be concise, clear, and friendly.
 
             Here is a complete guide to every feature of MicroBizMax:
 
@@ -65,17 +80,25 @@ public class ChatController {
             - Admins can log in at /admin-login.html with email: admin@gmail.com and password: admin12345.
             - The admin dashboard shows all vendors, customers, products, orders, and discounts across all accounts.
 
-            Always be helpful and guide users step by step. If asked something outside MicroBizMax, politely say you can only help with MicroBizMax features.
+            Always be helpful and guide users step by step. If a question is unrelated to MicroBizMax, still answer helpfully
+            when it is a normal general-knowledge or business question. If the user asks for unsafe, private, illegal, or
+            sensitive information, refuse briefly and redirect to a safe alternative.
             """;
 
-    private final RestTemplate restTemplate = new RestTemplate();
-
     @PostMapping("/chat")
-    public ResponseEntity<Map<String, String>> chat(@RequestBody Map<String, String> request) {
-        String userMessage = request.getOrDefault("message", "").trim();
+    public ResponseEntity<Map<String, String>> chat(@RequestBody Map<String, Object> request) {
+        String userMessage = String.valueOf(request.getOrDefault("message", "")).trim();
+        Long vendorId = parseVendorId(request.get("vendorId"));
 
         if (userMessage.isEmpty()) {
             return ResponseEntity.ok(Map.of("reply", "Please type a message!"));
+        }
+
+        if (vendorId != null) {
+            String directAnalyticsReply = getDirectAnalyticsReply(userMessage, vendorId);
+            if (directAnalyticsReply != null) {
+                return ResponseEntity.ok(Map.of("reply", directAnalyticsReply));
+            }
         }
 
         // If no API key configured, fall back to keyword replies
@@ -84,22 +107,26 @@ public class ChatController {
         }
 
         try {
-            String reply = callGemini(userMessage);
+            String reply = callGemini(userMessage, vendorId);
             return ResponseEntity.ok(Map.of("reply", reply));
         } catch (Exception e) {
             return ResponseEntity.ok(Map.of("reply", getFallbackReply(userMessage)));
         }
     }
 
-    private String callGemini(String userMessage) {
-        String url = GEMINI_URL + geminiApiKey;
+    private String callGemini(String userMessage, Long vendorId) {
+        String url = GEMINI_URL.formatted(geminiModel, geminiApiKey);
+        String prompt = userMessage;
+        if (vendorId != null) {
+            prompt = buildBusinessContext(vendorId) + "\n\nUser question: " + userMessage;
+        }
 
         // Build request body
         Map<String, Object> systemInstruction = Map.of(
                 "parts", List.of(Map.of("text", SYSTEM_PROMPT))
         );
 
-        Map<String, Object> userPart = Map.of("text", userMessage);
+        Map<String, Object> userPart = Map.of("text", prompt);
         Map<String, Object> userContent = Map.of(
                 "role", "user",
                 "parts", List.of(userPart)
@@ -123,6 +150,147 @@ public class ChatController {
         @SuppressWarnings("unchecked")
         List<Map<String, Object>> parts = (List<Map<String, Object>>) content.get("parts");
         return (String) parts.get(0).get("text");
+    }
+
+    private Long parseVendorId(Object rawVendorId) {
+        if (rawVendorId == null) return null;
+        try {
+            if (rawVendorId instanceof Number number) {
+                return number.longValue();
+            }
+            String value = String.valueOf(rawVendorId).trim();
+            return value.isEmpty() ? null : Long.parseLong(value);
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    private String getDirectAnalyticsReply(String message, Long vendorId) {
+        String m = message.toLowerCase();
+        boolean asksSales = m.contains("sale") || m.contains("revenue") || m.contains("earning") || m.contains("income");
+        boolean asksProfit = m.contains("profit");
+        boolean asksOrders = m.contains("order");
+        boolean asksCustomers = m.contains("customer");
+        boolean asksProducts = m.contains("product") || m.contains("stock") || m.contains("inventory");
+        boolean asksThisMonth = m.contains("this month") || m.contains("current month") || m.contains("monthly");
+        boolean asksToday = m.contains("today");
+        boolean asksTotal = m.contains("total") || m.contains("overall") || m.contains("all time");
+        boolean asksForMetric = asksThisMonth || asksToday || asksTotal || m.contains("how many") || m.contains("how much")
+                || m.contains("what is") || m.contains("what's") || m.contains("whats") || m.contains("show me")
+                || m.contains("tell me") || m.contains("count");
+
+        if (!(asksSales || asksProfit || asksOrders || asksCustomers || asksProducts)) {
+            return null;
+        }
+
+        if (!asksForMetric) {
+            return null;
+        }
+
+        Map<String, Object> dashboard = analyticsService.getDashboardStats(vendorId);
+        Map<String, Object> monthly = analyticsService.getMonthlySales(vendorId, LocalDate.now().getYear());
+        int monthIndex = LocalDate.now().getMonthValue() - 1;
+
+        if (asksThisMonth || (asksSales && !asksTotal && !asksToday)) {
+            double monthSales = getMonthlyValue(monthly, "sales", monthIndex);
+            double monthProfit = getMonthlyValue(monthly, "profit", monthIndex);
+            String monthName = LocalDate.now().getMonth().getDisplayName(TextStyle.FULL, Locale.ENGLISH);
+            if (asksProfit && !asksSales) {
+                return "Your profit for " + monthName + " is " + rupees(monthProfit) + ".";
+            }
+            return "Your sales for " + monthName + " are " + rupees(monthSales) + ", with " + rupees(monthProfit) + " profit.";
+        }
+
+        if (asksToday || asksOrders) {
+            long ordersToday = asLong(dashboard.get("ordersToday"));
+            return "You have " + ordersToday + " order" + (ordersToday == 1 ? "" : "s") + " today.";
+        }
+
+        if (asksProfit) {
+            return "Your total profit is " + rupees(asDouble(dashboard.get("totalProfit"))) + ".";
+        }
+
+        if (asksSales || asksTotal) {
+            return "Your total sales are " + rupees(asDouble(dashboard.get("totalSales"))) + ".";
+        }
+
+        if (asksCustomers) {
+            return "You have " + asLong(dashboard.get("totalCustomers")) + " customers, including "
+                    + asLong(dashboard.get("repeatedCustomers")) + " repeat customers.";
+        }
+
+        if (asksProducts) {
+            return "You have " + asLong(dashboard.get("totalProducts")) + " products, with "
+                    + asLong(dashboard.get("lowStockProducts")) + " low-stock items.";
+        }
+
+        return null;
+    }
+
+    private String buildBusinessContext(Long vendorId) {
+        Map<String, Object> dashboard = analyticsService.getDashboardStats(vendorId);
+        Map<String, Object> monthly = analyticsService.getMonthlySales(vendorId, LocalDate.now().getYear());
+        int monthIndex = LocalDate.now().getMonthValue() - 1;
+        String monthName = LocalDate.now().getMonth().getDisplayName(TextStyle.FULL, Locale.ENGLISH);
+
+        return """
+                Live MicroBizMax business context:
+                - Vendor ID: %d
+                - Total sales: %s
+                - Total profit: %s
+                - Orders today: %d
+                - Total customers: %d
+                - Repeat customers: %d
+                - Total products: %d
+                - Low-stock products: %d
+                - %s sales: %s
+                - %s profit: %s
+                """.formatted(
+                vendorId,
+                rupees(asDouble(dashboard.get("totalSales"))),
+                rupees(asDouble(dashboard.get("totalProfit"))),
+                asLong(dashboard.get("ordersToday")),
+                asLong(dashboard.get("totalCustomers")),
+                asLong(dashboard.get("repeatedCustomers")),
+                asLong(dashboard.get("totalProducts")),
+                asLong(dashboard.get("lowStockProducts")),
+                monthName,
+                rupees(getMonthlyValue(monthly, "sales", monthIndex)),
+                monthName,
+                rupees(getMonthlyValue(monthly, "profit", monthIndex))
+        );
+    }
+
+    private double getMonthlyValue(Map<String, Object> monthly, String key, int monthIndex) {
+        Object values = monthly.get(key);
+        if (values instanceof List<?> list && monthIndex >= 0 && monthIndex < list.size()) {
+            return asDouble(list.get(monthIndex));
+        }
+        return 0;
+    }
+
+    private double asDouble(Object value) {
+        if (value instanceof Number number) return number.doubleValue();
+        if (value == null) return 0;
+        try {
+            return Double.parseDouble(String.valueOf(value));
+        } catch (NumberFormatException e) {
+            return 0;
+        }
+    }
+
+    private long asLong(Object value) {
+        if (value instanceof Number number) return number.longValue();
+        if (value == null) return 0;
+        try {
+            return Long.parseLong(String.valueOf(value));
+        } catch (NumberFormatException e) {
+            return 0;
+        }
+    }
+
+    private String rupees(double value) {
+        return "₹" + String.format(Locale.ENGLISH, "%,.2f", value);
     }
 
     private String getFallbackReply(String message) {
@@ -151,6 +319,10 @@ public class ChatController {
             return "Click the 🚪 Logout button at the bottom of the sidebar on any page.";
         if (m.contains("admin"))
             return "Admins can log in at /admin-login.html using email: admin@gmail.com and password: admin12345.";
-        return "I can help with: login/register, adding customers, products, sales, discounts, and managing your profile. What would you like to know?";
+        if (m.contains("repeat customer") || m.contains("loyal") || m.contains("retention"))
+            return "To increase repeat customers, try: 1. Give a small reward after every few purchases. 2. Follow up with customers who bought recently and suggest related products. 3. Create simple offers for frequent buyers, like a weekend discount or bundle deal.";
+        if (m.contains("increase") || m.contains("improve") || m.contains("grow") || m.contains("idea") || m.contains("advice"))
+            return "A practical way to grow your store is to focus on your fastest-moving products, keep low-stock items available, follow up with recent customers, and create simple offers that encourage repeat purchases.";
+        return "I can help with MicroBizMax features, store management, customers, products, sales, discounts, inventory, and general business questions. What would you like to know?";
     }
 }

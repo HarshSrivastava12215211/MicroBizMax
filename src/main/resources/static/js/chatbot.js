@@ -1,5 +1,5 @@
 // ══════════════════════════════════════════════════════════════
-//  MicroBizMax Chatbot Widget – Gemini-powered support assistant
+//  MicroBizMax Chatbot Widget
 // ══════════════════════════════════════════════════════════════
 
 (function () {
@@ -17,7 +17,7 @@
                 <div class="chat-header-title">MicroBizMax Assistant</div>
                 <div class="chat-header-status">
                     <span class="status-dot"></span>
-                    <span>Online · Powered by Gemini AI</span>
+                    <span>Online</span>
                 </div>
             </div>
             <button class="chat-close-btn" id="chatCloseBtn" aria-label="Close chat">✕</button>
@@ -62,9 +62,13 @@
     const suggestions = document.getElementById('chatSuggestions');
     let isOpen = false;
 
+    function getCurrentVendorId() {
+        return localStorage.getItem('vendorId') || null;
+    }
+
     // ── Welcome message ───────────────────────────────────────────
     function addWelcome() {
-        addBotMessage(" Hi! I'm your **MicroBizMax Assistant**, powered by Gemini AI.\n\nI can help you with:\n• Login & registration\n• Adding customers, products, or sales\n• Applying discounts\n• Managing your profile\n\nWhat would you like help with?");
+        addBotMessage("Hi! I'm your **MicroBizMax Assistant**.\n\nI can help you with:\n• Login & registration\n• Adding customers, products, or sales\n• Applying discounts\n• Managing your profile\n• Store and business questions\n\nWhat would you like help with?");
     }
 
     // ── Toggle window ─────────────────────────────────────────────
@@ -163,7 +167,7 @@
             const res = await fetch('/api/chat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ message: text })
+                body: JSON.stringify({ message: text, vendorId: getCurrentVendorId() })
             });
             const data = await res.json();
             removeTyping();
